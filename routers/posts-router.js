@@ -84,41 +84,46 @@ router.put("/:id", (req, res) => {
     });
 });
 
-router.get("/:id/comments", (req, res) => {
+router.get("/:id/comments", async (req, res) => {
   const { id } = req.params;
-  Posts.findPostComments(id)
-    .then(comments => {
+  const post = await Posts.findById(id);
+  const comments = await Posts.findPostComments(id);
+  try {
+    if (post.length) {
       comments.length
-        ? res.status(200).json({ data: comments })
+        ? res.status(200).json(comments)
         : res
             .status(200)
             .json({ message: "There are no comments for this post" });
-    })
-    .catch(error => {
-      console.log(error);
-      res
-        .status(500)
-        .json({ message: "The comments information could not be retrieved" });
-    });
+    } else {
+      res.status(404).json({ message: "No post could be found with given ID" });
+    }
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "The post information could not be retrieved" });
+  }
 });
 
-router.post("/:id/comments", (req, res) => {
-  const commentInfo = req.body;
-
-  Posts.insertComment(commentInfo)
-    .then(comment => {
-      console.log(comment);
-      res.status(201).json({ data: comment });
-    })
-    .catch(error => {
-      console.log(error.message);
-      res
-        .status(500)
-        .json({
-          message:
-            "There was an error while saving the comment to the database",
-        });
+router.post("/:id/comments", async (req, res) => {
+  const { id } = req.params;
+  const post = await Posts.findById(id);
+  const comment = await Posts.insertComment(req.body);
+  try {
+    if (post.length) {
+      comment
+        ? res.status(201).json({ data: comment })
+        : res.status(400).json({
+            message: "Please provide text and post_id for the comment",
+          });
+    } else {
+      res.status(404).json({ message: "No post could be found with given ID" });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "There was an error while saving the comment to the database",
     });
+  }
 });
 
 module.exports = router;
