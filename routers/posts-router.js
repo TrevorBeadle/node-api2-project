@@ -108,13 +108,13 @@ router.get("/:id/comments", async (req, res) => {
 router.post("/:id/comments", async (req, res) => {
   const { id } = req.params;
   const post = await Posts.findById(id);
-  const comment = await Posts.insertComment(req.body);
+  const comment = await Posts.insertComment({...req.body, post_id: id});
   try {
     if (post.length) {
       comment
         ? res.status(201).json({ data: comment })
         : res.status(400).json({
-            message: "Please provide text and post_id for the comment",
+            message: "Please provide text for the comment",
           });
     } else {
       res.status(404).json({ message: "No post could be found with given ID" });
