@@ -48,6 +48,42 @@ router.post("/", (req, res) => {
     });
 });
 
+router.delete("/:id", (req, res) => {
+  Posts.remove(req.params.id)
+    .then(count => {
+      if (count > 0) {
+        res.status(200).json({ message: "Post has been removed" });
+      } else {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist" });
+      }
+    })
+    .catch(error => {
+      res.status(500).json({ message: "The post could not be removed" });
+    });
+});
+
+router.put("/:id", (req, res) => {
+  Posts.update(req.params.id, req.body)
+    .then(post => {
+      if (post) {
+        console.log(post);
+        res.status(200).json(post);
+      } else {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      }
+    })
+    .catch(error => {
+      console.log(error);
+      res
+        .status(500)
+        .json({ message: "The post information could not be modified" });
+    });
+});
+
 router.get("/:id/comments", (req, res) => {
   const { id } = req.params;
   Posts.findPostComments(id)
