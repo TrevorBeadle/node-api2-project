@@ -87,20 +87,37 @@ router.put("/:id", (req, res) => {
 router.get("/:id/comments", (req, res) => {
   const { id } = req.params;
   Posts.findPostComments(id)
-    .then(post => {
-      if (post.length) {
-        res.status(200).json(post);
-      } else {
-        res
-          .status(404)
-          .json({ message: "The post with the specified ID does not exist." });
-      }
+    .then(comments => {
+      comments.length
+        ? res.status(200).json({ data: comments })
+        : res
+            .status(200)
+            .json({ message: "There are no comments for this post" });
     })
     .catch(error => {
       console.log(error);
       res
         .status(500)
         .json({ message: "The comments information could not be retrieved" });
+    });
+});
+
+router.post("/:id/comments", (req, res) => {
+  const commentInfo = req.body;
+
+  Posts.insertComment(commentInfo)
+    .then(comment => {
+      console.log(comment);
+      res.status(201).json({ data: comment });
+    })
+    .catch(error => {
+      console.log(error.message);
+      res
+        .status(500)
+        .json({
+          message:
+            "There was an error while saving the comment to the database",
+        });
     });
 });
 
